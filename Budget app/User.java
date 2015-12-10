@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 /**
  * @(#)User.java
  *
@@ -7,7 +9,7 @@
  */
 
 
-public class User {
+public class User implements Serializable{
 	private String name;
 	private String level;
     
@@ -23,7 +25,6 @@ public class User {
     	return level;
     }
     public String toString() {
-    	
-    	return ("Name: " + name + ", Level: " + level + "\n");
+    	return ("Name: "+name + ", Level: "+level + "\n");
     }
 }

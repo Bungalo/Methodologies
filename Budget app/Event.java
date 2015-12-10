@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 /**
  * @(#)Event.java
  *
@@ -7,7 +9,7 @@
  */
 
 
-public class Event {
+public class Event implements Serializable{
 	
 	private String price;
 	private String name;
@@ -23,7 +25,19 @@ public class Event {
     }
     
     public String toString() {
-    	System.out.println("Not yet implemented");
-    	return "";
+    	return (purchDate + "\t\t" + name + "\t" + price + "\t\t" + purchaser + "\n");
     }
+    
+    public String getPrice() {
+    	return this.price;
+    }
+    public String getName() {
+    	return this.name;
+	}
+	public String getPurchDate() {
+	 	return this.purchDate;
+	}
+	public String getPurchaser() {
+		return this.purchaser;
+	}
 }
