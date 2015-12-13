@@ -25,7 +25,7 @@ public class Event implements Serializable{
     }
     
     public String toString() {
-    	return (purchDate + "\t\t" + name + "\t" + price + "\t\t" + purchaser + "\n");
+    	return (purchDate + "\t\t" + name + "\t\t" + price + "\t       " + purchaser + "\n");
     }
     
     public String getPrice() {

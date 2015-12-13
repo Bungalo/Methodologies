@@ -16,7 +16,8 @@ import java.io.*;
 public class BudgetProto extends JFrame implements ActionListener {
 	
 	private JButton checkBudget,addEvent,masterOptions, printUsers, quitBtn, addUser, addBudget, closeMaster, chooseBudget;
-	private JButton delUser, saveBudget, loadBudget;
+	private JButton delUser, saveBudget, loadBudget, delEvent;
+	private String password;
 	private static ArrayList<Budget> budgets = new ArrayList<Budget>();
 	private static Budget selectedBudget;
 	private static BudgetProto window;
@@ -87,7 +88,22 @@ public class BudgetProto extends JFrame implements ActionListener {
     			checkBudget();
 		}
     	else if (e.getSource() == masterOptions){
-    			masterOptions();
+			if(budgets.size()==0 || selectedBudget.getUsers().size() == 0)
+				masterOptions();
+			else {
+				JPanel paneeli = new JPanel();
+				JTextField fieldi = new JTextField(10);
+				paneeli.add(fieldi);
+				int result = JOptionPane.showConfirmDialog(null, paneeli, 
+			   "Enter master password", JOptionPane.OK_CANCEL_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
+					if (selectedBudget.getUsers().get(0).comparePassword(fieldi.getText()))
+						masterOptions();
+					else
+						JOptionPane.showMessageDialog(null, "Invalid password","Error", JOptionPane.INFORMATION_MESSAGE);	
+				}
+			}
+				
 		}
     	else if (e.getSource() == chooseBudget){
     		if(budgets.size() == 0)
@@ -128,6 +144,12 @@ public class BudgetProto extends JFrame implements ActionListener {
 		else if (e.getSource() == addBudget){
 			addBudget();
 		}
+		else if (e.getSource() == delEvent){
+			if(budgets.size() == 0)
+				JOptionPane.showMessageDialog(null, "You must first create a budget","No budget selected", JOptionPane.INFORMATION_MESSAGE);
+			else
+				deleteEvent();
+		}
 		else if (e.getSource() == delUser){
 			if(budgets.size() == 0)
 				JOptionPane.showMessageDialog(null, "You must first create a budget","No budget selected", JOptionPane.INFORMATION_MESSAGE);
@@ -151,36 +173,38 @@ public class BudgetProto extends JFrame implements ActionListener {
     public void checkBudget() {
     	final JFrame frame = new JFrame();
     	frame.setLayout(new BorderLayout(10,0));
-    	String eventString = "Date of Purchase\tItem\t\t\tCost\t    Purchaser\n";
+    	String eventString = "";
     	ArrayList<Event> events = selectedBudget.getEvents();
     	for(int i=0; i<events.size();i++) {
-    			eventString += events.get(i);
+    			eventString +="  " + (i+1) + ". "+ events.get(i);
 		}
     	JPanel paneeli = new JPanel(new BorderLayout(10,0));
-    	paneeli.setSize(2000,2000);
+    	paneeli.setSize(2000,600);
     	JTextArea area = new JTextArea(eventString);
     	String info = selectedBudget.getName() + " Remaining: " + selectedBudget.getRemaining();
     	JLabel budgetInfo = new JLabel(info);
     	budgetInfo.setFont(new Font("Arial", Font.BOLD, 22));
     	JButton closeCheck = new JButton("Back");
-    	area.setSize(2000,2000);
+    	area.setSize(2000,600);
     	area.setEditable(false);
     	area.setBackground(paneeli.getBackground());
+		area.setFont(new Font("Arial", Font.BOLD, 16));
     	paneeli.add(budgetInfo, BorderLayout.NORTH);
     	paneeli.add(area, BorderLayout.CENTER);
-    	frame.add(paneeli, BorderLayout.WEST);
+    	frame.add(paneeli, BorderLayout.CENTER);
     	frame.add(closeCheck, BorderLayout.SOUTH);
     	
     	closeCheck.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			frame.dispose();
+				repaint();
     			//window.setVisible(true);
     		}
     	});
     	
     	frame.setResizable(true);
     	frame.setTitle("Budget application");
-    	frame.setSize(1000,800);
+    	frame.setSize(1000,700);
     	frame.setLocationRelativeTo(null);
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	frame.setVisible(true);
@@ -190,21 +214,24 @@ public class BudgetProto extends JFrame implements ActionListener {
     	
     	window.setVisible(false);
     	final JFrame frame = new JFrame();
-    	frame.setLayout(new GridLayout(5,1));
+    	frame.setLayout(new GridLayout(6,1));
     	addUser = new JButton("Add user");
     	printUsers = new JButton("Userlist");
     	delUser = new JButton("Delete user");
     	addBudget = new JButton("Add budget");
+		delEvent = new JButton("Delete event");
     	closeMaster = new JButton("Back");
     	
     	addUser.addActionListener(this);
     	addBudget.addActionListener(this);
     	delUser.addActionListener(this);
     	printUsers.addActionListener(this);
+		delEvent.addActionListener(this);
     	closeMaster.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			frame.dispose();
     			window.setVisible(true);
+				repaint();
     		}
     	});
     	
@@ -212,6 +239,7 @@ public class BudgetProto extends JFrame implements ActionListener {
     	frame.add(delUser);
     	frame.add(printUsers);
     	frame.add(addBudget);
+		frame.add(delEvent);
     	frame.add(closeMaster);
     	
     	frame.setResizable(false);
@@ -226,6 +254,7 @@ public class BudgetProto extends JFrame implements ActionListener {
 
     	JPanel paneeli = new JPanel();
 		JTextField userName = new JTextField(10);
+		JTextField password = new JTextField(10);
 		JRadioButton masterRdio, normalRdio;
 		masterRdio = new JRadioButton("Master user", false);
 		normalRdio = new JRadioButton("Normal user", true);
@@ -234,6 +263,7 @@ public class BudgetProto extends JFrame implements ActionListener {
 		btnGroup.add(masterRdio);
 		btnGroup.add(normalRdio);
 		paneeli.add(userName);
+		paneeli.add(password);
 		paneeli.add(masterRdio);
 		paneeli.add(normalRdio);
 		//JButton pois = new JButton("Sulje");
@@ -242,13 +272,16 @@ public class BudgetProto extends JFrame implements ActionListener {
 		//paneeli.add(pois);
 		
 		int result = JOptionPane.showConfirmDialog(null, paneeli, 
-	       "Enter name and level of new user", JOptionPane.OK_CANCEL_OPTION);
+	       "Enter name, password and level of new user", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
 			if(userName.getText().equals(""))
 				JOptionPane.showMessageDialog(null, "Name cannot be empty","Error", JOptionPane.ERROR_MESSAGE);
 			else {
 				if(masterRdio.isSelected()) {
-					selectedBudget.addUser(new User (userName.getText(), "master"));
+					if(password.getText().equals(""))
+						JOptionPane.showMessageDialog(null, "Master password cannot be empty","Error", JOptionPane.ERROR_MESSAGE);
+					selectedBudget.addUser(new User (userName.getText(), "master", password.getText()));
+					System.out.println(password.getText());
 					JOptionPane.showMessageDialog(null, "Master user added");
 				}
 				else {
@@ -422,8 +455,47 @@ public class BudgetProto extends JFrame implements ActionListener {
 					JOptionPane.showMessageDialog(null, "User does not exist","Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		}	
+		}
+		repaint();
     }
+	public void deleteEvent(){
+		String userString = "";
+    	ArrayList<Event> events = selectedBudget.getEvents();
+    	for(int i=0; i<events.size();i++) {
+    			userString +="  " + (i+1) + ". "+ events.get(i);
+		}
+    	JPanel paneeli = new JPanel(new BorderLayout(10,0));
+    	JPanel input = new JPanel(new GridLayout(2,1));
+    	JTextField choice = new JTextField(2);
+    	JLabel label1 = new JLabel("Input the number of the event you want to delete");
+    	JTextArea text = new JTextArea(userString);
+    	text.setEditable(false);
+    	text.setBackground(paneeli.getBackground());
+    	System.out.println(userString);
+    	input.add(label1);
+    	input.add(choice);
+    	paneeli.add(text, BorderLayout.CENTER);
+    	paneeli.add(input, BorderLayout.SOUTH);
+    	
+		int result =JOptionPane.showConfirmDialog(null,paneeli,"List of events", JOptionPane.OK_CANCEL_OPTION);
+		
+		if (result == JOptionPane.OK_OPTION) {
+			String choiceString = choice.getText();
+			if(isNumeric(choiceString) == -1.0) {
+				JOptionPane.showMessageDialog(null, "Only input a number","Error", JOptionPane.ERROR_MESSAGE);
+			}
+			else {
+				int choiceInt = Integer.parseInt(choiceString);
+					if(choiceInt > events.size() || choiceInt < 1) {
+						JOptionPane.showMessageDialog(null, "Invalid index","Error", JOptionPane.ERROR_MESSAGE);
+					}
+					else {
+						events.remove(choiceInt -1);
+						JOptionPane.showMessageDialog(null, "Event deleted");
+					}
+			}
+		}
+	}
     public void saveBudget() {
 
     	try{

@@ -12,10 +12,16 @@ import java.io.Serializable;
 public class User implements Serializable{
 	private String name;
 	private String level;
+	private static String masterPassword;
     
-    public User(String name, String level) {
+	public User(String name, String level) {
     	this.name = name;
     	this.level = level;
+    }
+    public User(String name, String level, String password) {
+    	this.name = name;
+    	this.level = level;
+		this.masterPassword = password;
     }
     
     public String getName() {
@@ -24,6 +30,12 @@ public class User implements Serializable{
     public String getLevel() {
     	return level;
     }
+	public boolean comparePassword(String password) {
+		if (password.equals(masterPassword))
+			return true;
+		else
+			return false;
+	}
     public String toString() {
     	return ("Name: "+name + ", Level: "+level + "\n");
     }
